@@ -151,6 +151,15 @@ rangos_elementos_pasto = {
 }
 
 
+
+# Cerrar la conexión al finalizar el programa o cuando ya no se necesite
+def cerrar_conexion():
+    connection.close()
+
+# Puedes registrar una función para cerrar la conexión cuando la aplicación se detenga
+@app.teardown_appcontext
+def cerrar_conexion_teardown(exception):
+    cerrar_conexion()
 # Ejemplo de consulta SQL
 @app.route('/departaments_data',methods=['POST'])
 def index():
@@ -255,6 +264,7 @@ def index():
         list_departaments.append(dictionary_row)
 
     #### funciono :D
+    cursor.close()
     return  list_departaments
 
 
@@ -267,6 +277,8 @@ def departaments():
     data = []
     for element in results_departaments:
         data.append({'name':element[1],'id':element[0]})
+    
+    cursor.close()
     return data
 
 
@@ -282,6 +294,7 @@ def municipios():
     data = []
     for element in results_departaments:
         data.append({'name':element[2],'id':element[0],'id_departament':element[1]})
+    cursor.close()
     return data
 
 
@@ -378,6 +391,7 @@ def municipios_data():
     
     
     #### funciono :D
+    cursor.close()
     return  list_departaments
 
 ####SERVICIO PARA VER EL HISTORIAL DE UN CLIENTE DE UNA FINCA.
@@ -447,8 +461,10 @@ def cliente_historial():
             let_list_data.append(results)
     
     if(count == 0):
+        cursor.close()
         return []
     else:
+        cursor.close()
         return let_list_data
     
 
@@ -469,6 +485,7 @@ def inferencia_resultados():
     RANGOS  = dictionary_ranges[tipo_cultivo]
 
     if(magnitud < RANGOS[variable][0]):
+
         return {'Answer':'Bajo'}
     elif (magnitud >= RANGOS[variable][0] and  magnitud < RANGOS[variable][1]):
         return {'Answer':'Mod. bajo'}
@@ -585,6 +602,7 @@ def inferencia_resultados_2():
         dictionary_row['Mod. alto'] = count_M_alto
         dictionary_row['Alto'] = count_alto
         Data['Answer_city']=dictionary_row
+        cursor.close()
         return Data
     
     elif(departament !=''):
@@ -656,6 +674,7 @@ def inferencia_resultados_2():
         dictionary_row['Mod. alto'] = count_M_alto
         dictionary_row['Alto'] = count_alto
         Data['Answer_city']=dictionary_row
+        cursor.close()
         return Data
     else:
         dataframe_all_data = pd.DataFrame()
@@ -727,6 +746,7 @@ def inferencia_resultados_2():
         dictionary_row['Mod. alto'] = count_M_alto
         dictionary_row['Alto'] = count_alto
         Data['Answer_city']=dictionary_row
+        cursor.close()
         return Data
 #SELECT DISTINCT nombre FROM multilab.cliente
 
@@ -740,6 +760,7 @@ def getClientes():
     data = []
     for element in results_departaments:
         data.append({'value':element[0],'label':element[0]})
+    cursor.close()
     return data
 #### TERMINAMOS ENDPOINTS DE LA PLATAFORMA
 
