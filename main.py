@@ -6,19 +6,7 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
-# Configuración de la conexión a la base de datos
-app.config['MYSQL_HOST'] = '127.0.0.1'
-app.config['MYSQL_USER'] = 'root2'
-app.config['MYSQL_PASSWORD'] = 'Carrito_1'
-app.config['MYSQL_DB'] = 'multilab'
 
-# Creación de la conexión a la base de datos
-connection = pymysql.connect(
-    host=app.config['MYSQL_HOST'],
-    user=app.config['MYSQL_USER'],
-    password=app.config['MYSQL_PASSWORD'],
-    db=app.config['MYSQL_DB']
-)
 rangos_elementos = {
     "ph": [4.5, 5, 5.5, 6.001],
     "n": [0.2, 0.3, 0.4, 0.5001],
@@ -151,18 +139,31 @@ rangos_elementos_pasto = {
 }
 
 
+def do_connection():
+    # Configuración de la conexión a la base de datos
+    app.config['MYSQL_HOST'] = '127.0.0.1'
+    app.config['MYSQL_USER'] = 'root2'
+    app.config['MYSQL_PASSWORD'] = 'Carrito_1'
+    app.config['MYSQL_DB'] = 'multilab'
+
+    # Creación de la conexión a la base de datos
+    connection = pymysql.connect(
+        host=app.config['MYSQL_HOST'],
+        user=app.config['MYSQL_USER'],
+        password=app.config['MYSQL_PASSWORD'],
+        db=app.config['MYSQL_DB']
+    )
+    return  connection 
 
 # Cerrar la conexión al finalizar el programa o cuando ya no se necesite
-def cerrar_conexion():
+def cerrar_conexion(connection):
     connection.close()
 
-# Puedes registrar una función para cerrar la conexión cuando la aplicación se detenga
-@app.teardown_appcontext
-def cerrar_conexion_teardown(exception):
-    cerrar_conexion()
+
 # Ejemplo de consulta SQL
 @app.route('/departaments_data',methods=['POST'])
 def index():
+    connection=do_connection()
     ##################################
     #############
     ############# variable ['ph','n','mo','k','ca','mg','al','cic','p','fe','mn','zn','cu','s','b','ar','l','a']
@@ -265,11 +266,13 @@ def index():
 
     #### funciono :D
     cursor.close()
+    cerrar_conexion(connection)
     return  list_departaments
 
 
 @app.route('/departaments',methods=['GET'])
 def departaments():
+    connection=do_connection()
     cursor = connection.cursor()
     ####OBTENEMOS CADA UNO DE LOS DEPARTAMENTOS
     cursor.execute('SELECT * FROM multilab.departamentos')
@@ -279,12 +282,14 @@ def departaments():
         data.append({'name':element[1],'id':element[0]})
     
     cursor.close()
+    cerrar_conexion(connection)
     return data
 
 
 # Ejemplo de consulta SQL
 @app.route('/municipios',methods=['POST'])
 def municipios():
+    connection=do_connection()
     data = request.json
     departament_id = data ['id_departament']
     cursor = connection.cursor()
@@ -295,6 +300,7 @@ def municipios():
     for element in results_departaments:
         data.append({'name':element[2],'id':element[0],'id_departament':element[1]})
     cursor.close()
+    cerrar_conexion(connection)
     return data
 
 
@@ -302,6 +308,7 @@ def municipios():
 # Ejemplo de consulta SQL
 @app.route('/municipios_data',methods=['POST'])
 def municipios_data():
+    connection=do_connection()
     ##################################
     #############
     ############# variable ['ph','n','mo','k','ca','mg','al','cic','p','fe','mn','zn','cu','s','b','ar','l','a']
@@ -392,6 +399,7 @@ def municipios_data():
     
     #### funciono :D
     cursor.close()
+    cerrar_conexion(connection)
     return  list_departaments
 
 ####SERVICIO PARA VER EL HISTORIAL DE UN CLIENTE DE UNA FINCA.
@@ -399,6 +407,7 @@ def municipios_data():
 @app.route('/cliente_historial',methods=['POST'])
 def cliente_historial():
     data = request.json
+    connection=do_connection()
     dictionary_ranges = {
         'General':rangos_elementos,
         'Café':rangos_elementos_cafe,
@@ -462,9 +471,11 @@ def cliente_historial():
     
     if(count == 0):
         cursor.close()
+        cerrar_conexion(connection)
         return []
     else:
         cursor.close()
+        cerrar_conexion(connection)
         return let_list_data
     
 
@@ -499,6 +510,7 @@ def inferencia_resultados():
 ### TERMINAMOS PROYECTO DE BACKEND
 @app.route('/inferencia_2',methods=['POST'])
 def inferencia_resultados_2():
+    connection=do_connection()
     data = request.json
     dictionary_ranges = {
         'General':rangos_elementos,
@@ -507,6 +519,7 @@ def inferencia_resultados_2():
         'Aguacates':rangos_elementos_aguacate,
         'Pasto':rangos_elementos_pasto
     }
+    
 
     variable = data['variable']#'ph'
     magnitud = float(data['magnitud'])#4.8
@@ -603,6 +616,7 @@ def inferencia_resultados_2():
         dictionary_row['Alto'] = count_alto
         Data['Answer_city']=dictionary_row
         cursor.close()
+        cerrar_conexion(connection)
         return Data
     
     elif(departament !=''):
@@ -675,6 +689,7 @@ def inferencia_resultados_2():
         dictionary_row['Alto'] = count_alto
         Data['Answer_city']=dictionary_row
         cursor.close()
+        cerrar_conexion(connection)
         return Data
     else:
         dataframe_all_data = pd.DataFrame()
@@ -747,12 +762,14 @@ def inferencia_resultados_2():
         dictionary_row['Alto'] = count_alto
         Data['Answer_city']=dictionary_row
         cursor.close()
+        cerrar_conexion(connection)
         return Data
 #SELECT DISTINCT nombre FROM multilab.cliente
 
 # Ejemplo de consulta SQL
 @app.route('/clientes',methods=['GET'])
 def getClientes():
+    connection=do_connection()
     cursor = connection.cursor()
     ####OBTENEMOS CADA UNO DE LOS DEPARTAMENTOS
     cursor.execute('SELECT DISTINCT nombre FROM multilab.cliente')
@@ -761,6 +778,7 @@ def getClientes():
     for element in results_departaments:
         data.append({'value':element[0],'label':element[0]})
     cursor.close()
+    cerrar_conexion(connection)
     return data
 #### TERMINAMOS ENDPOINTS DE LA PLATAFORMA
 
