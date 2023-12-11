@@ -7,6 +7,7 @@ nombre_de_tu_entorno_virtual\Scripts\activate
 #### INSTALAR REQUERIMIENTOS
 pip install -r requirements.txt
 #### CORRER MAIN.PY
-
-# UNA VEZ YA EJECUTADO LA INICIADO EL SERVIDOR DE LA BASE DE DATOS
 python main.py
+
+El puerto por default esta en el puerto 5000 del localhost, eso se puede modificar junto con las credenciales de acceso a la base de datos
+dentro del archivo main.py ubicado en el origen de este proyecto.
